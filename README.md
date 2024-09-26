@@ -1,39 +1,109 @@
-# titansoft-quiz
+## Page Design
 
-This template should help get you started developing with Vue 3 in Vite.
+1. Profile Page
+   ![profile.png](profile.png)
+2. Otp Page
+   ![otp.png](otp.png)
 
-## Recommended IDE Setup
+## Requirement
 
-[VSCode](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
+1. if user not authenticated, should redirect to verification page
+2. if user authenticated, should redirect to profile page
 
-## Type Support for `.vue` Imports in TS
+## Verification Page
 
-TypeScript cannot handle type information for `.vue` imports by default, so we replace the `tsc` CLI with `vue-tsc` for type checking. In editors, we need [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) to make the TypeScript language service aware of `.vue` types.
+- [ ] should have 4 digit inputs
+- [ ] should focus on first input when page loaded
+- [ ] should focus on next input when user enter a digit
+- [ ] should focus on previous input when user press backspace
+- [ ] should auto submit when user enter 4 digits
+- [ ] should show error message when user enter wrong code
+- [ ] should show loading when user submit code
+- [ ] should redirect to profile page when user submit correct code
+- [ ] able to paste code from clipboard
+- [ ] input should be numeric only
+- [ ] each input should be 1 numeric only
 
-## Customize configuration
+## Profile Page
 
-See [Vite Configuration Reference](https://vitejs.dev/config/).
+- [ ] should show username, quote, user photo and logout button
+- [ ] should remove token and redirect to verification page when user click logout button
+- [ ] should not log out user when user refresh page
 
-## Project Setup
+## Mock API Documentation
 
-```sh
-pnpm install
+### Overview
+
+This document provides detailed specifications and usage guidelines for the `/api/verify` and `/api/auth` endpoints.
+
+---
+
+### 1. Verification API - POST /api/verify
+
+#### Request Body:
+
+| Parameter | Type   | Description            |
+| --------- | ------ | ---------------------- |
+| code      | string | The verification code. |
+
+#### Example Request:
+
+```json
+{
+  "code": "12345"
+}
 ```
 
-### Compile and Hot-Reload for Development
+#### Response:
 
-```sh
-pnpm dev
+Returns whether the verification code is valid. If valid, a token is also provided.
+
+#### Example Response (valid code):
+
+```json
+{
+  "valid": true,
+  "token": "example_token"
+}
 ```
 
-### Type-Check, Compile and Minify for Production
+#### Example Response (invalid code):
 
-```sh
-pnpm build
+```json
+{
+  "valid": false
+}
 ```
 
-### Lint with [ESLint](https://eslint.org/)
+### 2. Authorization API - GET /api/auth
 
-```sh
-pnpm lint
+#### Request Headers:
+
+| Header Name   | Value  | Description                         |
+| ------------- | ------ | ----------------------------------- |
+| Authorization | string | The token received from /api/verify |
+
+#### Response:
+
+If authorized, the response will contain the username,quote and photo. Otherwise, an error message will be provided.
+If valid, a token is also provided.
+
+#### Example Response (Authorized):
+
+When valid:
+
+```json
+{
+  "username": "johnDoe",
+  "quote": "Hello, World!",
+  "photo": "https://example.com/image.jpg"
+}
+```
+
+#### Example Response (Unauthorized):
+
+```json
+{
+  "message": "unauthorized"
+}
 ```
