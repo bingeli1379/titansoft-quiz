@@ -1,0 +1,7 @@
+@import url('./reset.css');
+
+body {
+  font-family: sans-serif;
+  background-color: #242424;
+  overflow-y: hidden;
+}
