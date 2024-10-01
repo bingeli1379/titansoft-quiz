@@ -1,20 +1,30 @@
+<script setup lang="ts">
+import { ref } from 'vue'
+import { useRouter } from 'vue-router'
+import { useAuthStore } from '@/stores/auth'
+
+const router = useRouter()
+const authStore = useAuthStore()
+
+const profile = ref(authStore.profile)
+
+function logout() {
+  authStore.logoutHandler()
+  router.push({ name: 'Otp' })
+}
+</script>
+
 <template>
   <div class="profile">
     <div class="profile-card">
-      <img
-        class="profile-photo"
-        src="https://encrypted-tbn2.gstatic.com/images?q=tbn:ANd9GcS1TTHZiu4zTDCtRsJaDz7r2WwObPkGpX46r_IQDhLb5ZIywFz4UGkd5_5sy1lEH5WYRIbsbSdwW42HJVnJDhnIgvzAJfhh0vlmY_rj_Q"
-        alt="user photo"
-      />
+      <img class="profile-photo" :src="profile?.photo" alt="user photo" />
 
       <div class="profile-card-content">
         <p class="profile-quote">
-          123132132
-          <!-- Lorem ipsum dolor, sit amet consectetur adipisicing elit. Ipsum nulla laborum perspiciatis
-          animi, obcaecati cum accusamus quas magnam in qui similique iusto necessitatibus, minima
-          vitae! Velit culpa illum in nesciunt. -->
+          {{ profile?.quote }}
         </p>
-        <span class="profile-name">name</span>
+        <span class="profile-name">{{ profile?.username }}</span>
+        <button class="profile-logout" @click="logout">logout</button>
       </div>
     </div>
   </div>
@@ -55,15 +65,42 @@
 
 .profile-card-content {
   flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1rem;
   padding: 2rem;
+  margin-top: 7%;
+}
+@media (max-width: 640px) {
+  .profile-card-content {
+    margin-top: 0;
+  }
 }
 
 .profile-quote {
   color: #ffffff;
-  margin: 0 0 1rem;
+  margin: 0;
 }
 
 .profile-name {
   color: #0ea5e9;
+}
+
+.profile-logout {
+  display: block;
+  background-color: #0ea5e9;
+  color: #ffffff;
+  border: none;
+  border-radius: 0.25rem;
+  cursor: pointer;
+  padding: 0.5rem 1rem;
+  margin-top: auto;
+}
+.profile-logout:hover {
+  background-color: #028ac7;
+}
+.profile-logout:active {
+  background-color: #0370a1;
 }
 </style>

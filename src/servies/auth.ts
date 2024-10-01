@@ -7,7 +7,7 @@ export interface VerifyCodeData {
 }
 export interface VerifyCodeResponse {
   valid: boolean
-  token: string
+  token?: string
 }
 export async function verifyCode(data: VerifyCodeData): AxiosPromise<VerifyCodeResponse> {
   return service.post('/api/verify', data)
@@ -18,6 +18,9 @@ export interface Profile {
   quote: string
   photo: string
 }
-export async function getProfile(): AxiosPromise<Profile> {
+export interface ProfileErrorResponse {
+  message: string
+}
+export async function getProfile(): AxiosPromise<Profile | ProfileErrorResponse> {
   return service.get('/api/auth')
 }

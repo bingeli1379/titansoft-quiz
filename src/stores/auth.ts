@@ -15,13 +15,20 @@ export const useAuthStore = defineStore('auth', () => {
   async function getProfileHandler(): Promise<Profile | null> {
     try {
       const res = await getProfile()
-      profile.value = res.data
-      return res.data
-    } catch (error) {
+      const data = res.data
+      if ('message' in data) return null
+
+      profile.value = data
+      return data
+    } catch {
       return null
     }
   }
 
+  async function loginHandler(value: string) {
+    cookies.set('token', value)
+    token.value = value
+  }
   async function logoutHandler() {
     cookies.remove('token')
     token.value = null
@@ -35,6 +42,7 @@ export const useAuthStore = defineStore('auth', () => {
     profile: readonly(profile),
     getProfileHandler,
 
+    loginHandler,
     logoutHandler
   }
 })

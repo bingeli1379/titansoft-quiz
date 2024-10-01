@@ -1,3 +1,27 @@
+# Titansoft Quiz
+
+Using node 20.x version
+
+1. install dependencies
+
+```bash
+pnpm i
+```
+
+2. run frontend server
+
+```bash
+pnpm run dev
+```
+
+3. run backend server
+
+```bash
+pnpm run server
+```
+
+---
+
 ## Page Design
 
 1. Profile Page
