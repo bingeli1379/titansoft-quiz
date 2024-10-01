@@ -8,11 +8,9 @@ const service = axios.create({
 service.interceptors.request.use(
   (config) => {
     const authStore = useAuthStore()
-    return {
-      ...config,
-      withCredentials: true,
-      Authorization: authStore.token
-    }
+    config.withCredentials = true
+    config.headers.Authorization = authStore.token
+    return config
   },
   (error) => {
     return Promise.reject(error)
