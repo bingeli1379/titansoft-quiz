@@ -25,9 +25,9 @@ pnpm run server
 ## Page Design
 
 1. Profile Page
-   ![profile.png](profile.png)
+   ![profile.png](./public/profile.png)
 2. Otp Page
-   ![otp.png](otp.png)
+   ![otp.png](./public/otp.png)
 
 ## Requirement
 
