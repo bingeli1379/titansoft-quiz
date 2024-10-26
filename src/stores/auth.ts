@@ -25,11 +25,11 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
-  async function loginHandler(value: string) {
+  function loginHandler(value: string) {
     cookies.set('token', value)
     token.value = value
   }
-  async function logoutHandler() {
+  function logoutHandler() {
     cookies.remove('token')
     token.value = null
     profile.value = null

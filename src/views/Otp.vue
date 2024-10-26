@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { nextTick, onMounted, onUnmounted, ref } from 'vue'
+import { nextTick, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { verifyCode } from '@/servies/auth'
@@ -7,17 +7,61 @@ import { verifyCode } from '@/servies/auth'
 const router = useRouter()
 const authStore = useAuthStore()
 
-const inputRef0 = ref<HTMLInputElement | null>(null)
-const inputRef1 = ref<HTMLInputElement | null>(null)
-const inputRef2 = ref<HTMLInputElement | null>(null)
-const inputRef3 = ref<HTMLInputElement | null>(null)
+const CODE_NUMBER = 4
+function getInitialCodeList() {
+  return Array(CODE_NUMBER).fill('')
+}
 
-type CodeList = [string, string, string, string]
-const codeList = ref<CodeList>(['', '', '', ''])
+let isComposition = false
+const inputRef = ref<(HTMLInputElement | null)[]>([])
+const codeList = ref<string[]>(getInitialCodeList())
+function beforeInputHandler(index: number) {
+  if (isComposition) return
+
+  codeList.value[index] = ''
+}
+function inputHandler(index: number) {
+  if (isComposition) return
+
+  codeList.value[index] = codeList.value[index].match(/\d/)?.[0] ?? ''
+  if (!codeList.value[index]) return
+
+  nextStepHandler(index + 1)
+}
+function backspaceHandler(index: number) {
+  if (index === 0) return
+
+  nextStepHandler(index - 1)
+}
+
+function compositionstartHandler() {
+  isComposition = true
+}
+function compositionendHandler(e: CompositionEvent, index: number) {
+  isComposition = false
+  codeList.value[index] = e.data
+  inputHandler(index)
+}
+
+function nextStepHandler(index: number) {
+  const input = inputRef.value[index]
+  if (input) {
+    input?.focus()
+    return
+  }
+
+  submit()
+}
+
+function pasteHandler(e: ClipboardEvent) {
+  const text = e.clipboardData?.getData('text') ?? ''
+  const filteredText = text.replace(/\D/g, '')
+  codeList.value = getInitialCodeList().map((code, index) => filteredText[index] ?? code)
+  nextStepHandler(filteredText.length)
+}
 
 const isLoading = ref(false)
 const errorMessage = ref<string | null>(null)
-
 async function submit() {
   if (isLoading.value) return
 
@@ -31,130 +75,36 @@ async function submit() {
       return
     }
 
-    authStore.loginHandler(res.data.token!)
+    authStore.loginHandler(res.data.token)
     router.push({ name: 'Profile' })
   } catch (error) {
     errorMessage.value = 'Server Error'
   } finally {
     isLoading.value = false
-    if (errorMessage.value) nextTick(nextStepHandler)
+    nextTick(() => nextStepHandler(0))
   }
 }
 
-function keydownHandler(e: KeyboardEvent, index: number) {
-  if (e.code !== 'Backspace') return
-
-  const target = e.target as HTMLInputElement
-  const oldValue = codeList.value[index]
-  codeList.value[index] = ''
-  target.value = ''
-  if (oldValue !== '') return
-
-  setTimeout(() => {
-    if (index === 0) return
-    nextStepHandler(index - 1)
-  })
-}
-
-function inputHandler(e: Event, index: number) {
-  const target = e.target as HTMLInputElement
-  const inputValue = (e as InputEvent).data ?? ''
-  const oldValue = codeList.value[index]
-  const isNumber = /^\d$/.test(inputValue)
-  if (isNumber === false) {
-    target.value = oldValue
-    return
-  }
-
-  codeList.value[index] = inputValue
-  target.value = inputValue
-  setTimeout(() => {
-    nextStepHandler(index + 1)
-  })
-}
-
-function nextStepHandler(index: number = 0) {
-  switch (index) {
-    case 0:
-      inputRef0.value?.focus()
-      break
-    case 1:
-      inputRef1.value?.focus()
-      break
-    case 2:
-      inputRef2.value?.focus()
-      break
-    case 3:
-      inputRef3.value?.focus()
-      break
-    case 4:
-      submit()
-      break
-  }
-}
-
-function pasteHandler(e: ClipboardEvent) {
-  const text = e.clipboardData?.getData('text') ?? ''
-  const filteredList = text
-    .split('')
-    .filter((char) => /^\d$/.test(char))
-    .slice(0, 4)
-  const copyCodeList = filteredList.reduce<CodeList>(
-    (list, char, index) => {
-      list[index] = char
-      return list
-    },
-    ['', '', '', '']
-  )
-  codeList.value = copyCodeList
-  nextStepHandler(filteredList.length)
-}
-
-onMounted(() => {
-  nextStepHandler()
-  document.addEventListener('paste', pasteHandler)
-})
-onUnmounted(() => {
-  document.removeEventListener('paste', pasteHandler)
-})
+onMounted(() => nextStepHandler(0))
 </script>
 
 <template>
-  <div class="otp">
+  <div class="otp" @paste="pasteHandler">
     <h1 class="otp-title">Enter verification</h1>
 
     <div class="otp-inputs">
       <input
-        ref="inputRef0"
-        :value="codeList[0]"
+        v-for="(code, index) in codeList"
+        :key="index"
+        ref="inputRef"
+        v-model="codeList[index]"
         type="text"
         :disabled="isLoading"
-        @keydown="keydownHandler($event, 0)"
-        @input="inputHandler($event, 0)"
-      />
-      <input
-        ref="inputRef1"
-        :value="codeList[1]"
-        type="text"
-        :disabled="isLoading"
-        @keydown="keydownHandler($event, 1)"
-        @input="inputHandler($event, 1)"
-      />
-      <input
-        ref="inputRef2"
-        :value="codeList[2]"
-        type="text"
-        :disabled="isLoading"
-        @keydown="keydownHandler($event, 2)"
-        @input="inputHandler($event, 2)"
-      />
-      <input
-        ref="inputRef3"
-        :value="codeList[3]"
-        type="text"
-        :disabled="isLoading"
-        @keydown="keydownHandler($event, 3)"
-        @input="inputHandler($event, 3)"
+        @beforeinput="beforeInputHandler(index)"
+        @input="inputHandler(index)"
+        @keyup.backspace="backspaceHandler(index)"
+        @compositionstart="compositionstartHandler"
+        @compositionend="compositionendHandler($event, index)"
       />
     </div>
 

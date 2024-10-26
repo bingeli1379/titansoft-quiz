@@ -5,10 +5,14 @@ import type { AxiosPromise } from 'axios'
 export interface VerifyCodeData {
   code: string
 }
-export interface VerifyCodeResponse {
-  valid: boolean
-  token?: string
+export interface VerifyCodeSuccessResponse {
+  valid: true
+  token: string
 }
+export interface VerifyCodeFailureResponse {
+  valid: false
+}
+export type VerifyCodeResponse = VerifyCodeSuccessResponse | VerifyCodeFailureResponse
 export async function verifyCode(data: VerifyCodeData): AxiosPromise<VerifyCodeResponse> {
   return service.post('/api/verify', data)
 }
