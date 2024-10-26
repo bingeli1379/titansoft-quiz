@@ -12,35 +12,30 @@ function getInitialCodeList() {
   return Array(CODE_NUMBER).fill('')
 }
 
-let isComposition = false
 const inputRef = ref<(HTMLInputElement | null)[]>([])
 const codeList = ref<string[]>(getInitialCodeList())
 function beforeInputHandler(index: number) {
-  if (isComposition) return
-
   codeList.value[index] = ''
 }
-function inputHandler(index: number) {
-  if (isComposition) return
+function inputHandler(e: Event, index: number) {
+  // return input event
+  if ('data' in e === false) return
 
-  codeList.value[index] = codeList.value[index].match(/\d/)?.[0] ?? ''
-  if (!codeList.value[index]) return
+  // composition event
+  const event = e as InputEvent
+  const target = e.target as HTMLInputElement
+  const filteredValue = event.data?.match(/\d/)?.[0] ?? ''
+  codeList.value[index] = filteredValue
+  target.value = filteredValue
+  if (event.inputType !== 'insertText' || !codeList.value[index]) return
 
+  // insert text event
   nextStepHandler(index + 1)
 }
 function backspaceHandler(index: number) {
   if (index === 0) return
 
   nextStepHandler(index - 1)
-}
-
-function compositionstartHandler() {
-  isComposition = true
-}
-function compositionendHandler(e: CompositionEvent, index: number) {
-  isComposition = false
-  codeList.value[index] = e.data
-  inputHandler(index)
 }
 
 function nextStepHandler(index: number) {
@@ -101,12 +96,14 @@ onMounted(() => nextStepHandler(0))
         type="text"
         :disabled="isLoading"
         @beforeinput="beforeInputHandler(index)"
-        @input="inputHandler(index)"
+        @input="inputHandler($event, index)"
         @keyup.backspace="backspaceHandler(index)"
-        @compositionstart="compositionstartHandler"
-        @compositionend="compositionendHandler($event, index)"
       />
     </div>
+
+    <h1 style="color: white">
+      {{ codeList }}
+    </h1>
 
     <div class="otp-message">
       <p v-if="isLoading" class="otp-loading">loading...</p>
